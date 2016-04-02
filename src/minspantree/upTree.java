@@ -1,32 +1,41 @@
 package minspantree;
 
 public class upTree {
-	int[] upTreeArray;
+	Vertex[] upTreeArray;
 	
 	public upTree(){
-		upTreeArray = new int[1000];
-		for(int i = 0; i < proj3.nVertices; i++){
-			upTreeArray[i] = -1;
-		}
+		upTreeArray = new Vertex[1000];
+		//for(int i = 0; i < proj3.nVertices; i++){
+			//upTreeArray[i] = -1;
+		//}
 	}
 	
-	public void union(int a, int b){
-		int countA = Math.abs(upTreeArray[a]);
-		int countB = Math.abs(upTreeArray[b]);
+	public Vertex union(Vertex a, Vertex b){
+		int countA = Math.abs(a.getCount());
+		int countB = Math.abs(b.getCount());
 		if(countA >= countB){
-			upTreeArray[b] = a;
-			upTreeArray[a] = -(countA + countB);
+			b.setParent(a);
+			b.setCount(0);
+			a.setCount(-(countA + countB));
+			return a;
 		}else{
-			upTreeArray[a] = b;
-			upTreeArray[b] = -(countA + countB);
+			a.setParent(b);
+			a.setCount(0);
+			b.setCount(-(countA + countB));
+			return b;
 		}
 	}
 	
-	public int find(int i){
-		while(upTreeArray[i] >= 0){
-			i = upTreeArray[i];
+	public Vertex find(Vertex v){
+		while(v.getParent() != null){
+			v = v.getParent();
 		}
-		return i;
+		return v;
+	}
+	
+	public void makeSet(Vertex v){
+		int pos = v.getIndex();
+		upTreeArray[pos] = v;
 	}
 	
 

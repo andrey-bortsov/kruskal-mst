@@ -12,12 +12,16 @@ public class proj3 {
 	private static upTree uptree;
 	public static int nVertices;
 	public static proj3 pr;
+	public static AdjacencyList al;
 
 	public static void main(String[] args) throws FileNotFoundException {
 		pr = new proj3();
 		heap = new Heap();
 		nVertices = 0;
-		File file = new File("files\\graph1-input.txt");
+		uptree = new upTree();
+		al = new AdjacencyList();
+		
+		File file = new File("files\\graph2-input.txt");
 		Scanner sc = new Scanner(file);
 		
 		while(sc.hasNextLine()){
@@ -29,9 +33,14 @@ public class proj3 {
 				double w = sc1.nextDouble();
 				Edge e = new Edge(v1, v2, w);
 				heap.insert(e);
+				uptree.makeSet(e.getVertex1());
+				uptree.makeSet(e.getVertex2());
 				if(nVertices < (Math.max(v1,  v2) + 1)){
 					nVertices = Math.max(v1,  v2) + 1;
 				}
+				
+				al.add(e.getVertex1().getIndex(), e.getVertex2());
+				al.add(e.getVertex2().getIndex(), e.getVertex1());
 			}
 			
 		}
@@ -45,6 +54,10 @@ public class proj3 {
 		for(Edge e:mst){
 			System.out.println(e.toString());
 		}
+		al.sort();
+		for(int i = 0; i < nVertices; i++){
+			System.out.println(al.toString(i));
+		}
 
 	}
 	
@@ -53,11 +66,11 @@ public class proj3 {
 		int components = nVertices;
 		while(components > 1){
 			Edge e = heap.deleteMin();
-			int v1 = e.getVertex1().getIndex();
-			int v2 = e.getVertex2().getIndex();
-			int u1 = uptree.find(v1);
-			int u2 = uptree.find(v2);
-			if(u1 != u2){
+			Vertex v1 = e.getVertex1();
+			Vertex v2 = e.getVertex2();
+			Vertex u1 = uptree.find(v1);
+			Vertex u2 = uptree.find(v2);
+			if(u1.getIndex() != u2.getIndex()){
 				uptree.union(u1, u2);
 				mst.add(e);
 				
