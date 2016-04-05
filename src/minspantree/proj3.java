@@ -1,18 +1,17 @@
 package minspantree;
 /*********************************************************************************
  *********************************************************************************
- **
- ** This program calculates and outputs a minimum spanning tree using as input a set 
- ** of weighted edges and numbered vertices of a graph. The program has five inner
- ** classes: Vertex, Edge, Heap, upTree, and AdjacencyList.
- ** 
- ** Author: Andrey Bortsov
- ** Date: 4-2-2016
- ** 
+ **                                                                             **
+ ** This program calculates and outputs a minimum spanning tree using as input  **
+ ** a set of weighted edges and numbered vertices of a graph. The program has   **
+ ** five inner classes: Vertex, Edge, Heap, upTree, and AdjacencyList.          **
+ **                                                                             **
+ ** Author: Andrey Bortsov                                                      **
+ ** Date: 4-2-2016                                                              **
+ **                                                                             **
  *********************************************************************************
- ********************************************************************************/
-import java.io.File;
-import java.io.FileNotFoundException;
+ *********************************************************************************/
+
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
@@ -24,17 +23,19 @@ public class proj3 {
 	private static int nVertices;
 	private static proj3 pr;
 	private static AdjacencyList al;
+	public static final int MAX_NODES = 1000; // maximum nodes in graph
+	public static final int MAX_EDGES = 5000; // maximum edges in graph
 
-	public static void main(String[] args) throws FileNotFoundException {
+	public static void main(String[] args) {
 		pr = new proj3();
 		heap = pr.new Heap();
 		nVertices = 0;
 		uptree = pr.new upTree();
 		al = pr.new AdjacencyList();
 		
-		File file = new File("files\\graph1-input.txt");
-		Scanner sc = new Scanner(file);
+		Scanner sc = new Scanner(System.in);
 		
+		// read input line by line until -1 encountered
 		while(sc.hasNextLine()){
 			String line = sc.nextLine();
 			if(!line.trim().equals("-1")){
@@ -42,29 +43,30 @@ public class proj3 {
 				int v1 = sc1.nextInt();
 				int v2 = sc1.nextInt();
 				double w = sc1.nextDouble();
-				Edge e = pr.new Edge(v1, v2, w);
-				heap.insert(e);
-				uptree.makeSet(e.getVertex1());
-				uptree.makeSet(e.getVertex2());
-				if(nVertices < (Math.max(v1,  v2) + 1)){
+				Edge e = pr.new Edge(v1, v2, w);                   // construct edge object
+				heap.insert(e);                                    // insert edge into heap
+				uptree.makeSet(e.getVertex1());                    // make set from first vertex and insert into uptree 
+				uptree.makeSet(e.getVertex2());                    // make set from second vertex and insert into uptree 
+				if(nVertices < (Math.max(v1,  v2) + 1)){           // update node counter
 					nVertices = Math.max(v1,  v2) + 1;
-				}
-				
-				al.add(e.getVertex1().getIndex(), e.getVertex2());
-				al.add(e.getVertex2().getIndex(), e.getVertex1());
+				}			
+				al.add(e.getVertex1().getIndex(), e.getVertex2()); // add first vertex into adjacency list
+				al.add(e.getVertex2().getIndex(), e.getVertex1()); // add second vertex into adjacency list
 			}
-			
 		}
 		
+		// print all edges from heap
 		for(int i = 0; i < heap.getSize(); i++){
 			System.out.println(heap.getElement(i).toString());
 		}
 		
-		uptree = pr.new upTree();
+		// compute and print MST
 		LinkedList<Edge> mst = pr.kruskalMST();
 		for(Edge e:mst){
 			System.out.println(e.toString());
 		}
+		
+		// print adjacency list in sorted order
 		al.sort();
 		for(int i = 0; i < nVertices; i++){
 			System.out.println(al.toString(i));
@@ -72,12 +74,16 @@ public class proj3 {
 
 	}
 	
-	/**
-	 * This function, when applied to a heap of edges, returns a collection 
-	 * of edges that constitute a minimum spanning tree for the graph.
-	 * It uses an upTree to keep track of joined edges.
-	 * @return Linked List of MST edges
-	 */
+	/**************************************************************************
+	 **************************************************************************
+	 ** 
+	 ** This function, when applied to a heap of edges, returns a collection 
+	 ** of edges that constitute a minimum spanning tree for the graph.
+	 ** It uses an upTree to keep track of joined edges.
+	 ** @return Linked List of MST edges
+	 ** 
+	 ************************************************************************** 
+	 **************************************************************************/
 	public LinkedList<Edge> kruskalMST(){
 		LinkedList<Edge> mst = new LinkedList<Edge>();
 		int components = nVertices;
@@ -90,17 +96,17 @@ public class proj3 {
 			if(u1.getIndex() != u2.getIndex()){
 				uptree.union(u1, u2);
 				mst.add(e);
-				
 			}
 			components--;
 		}
-		Collections.sort(mst,new EdgeComparator());
+		Collections.sort(mst,new EdgeComparator()); // sort edges in MST before printing
 		return mst;
 	}
 	
 	/**
 	 * Helper class that provides a method to compare two edges
-	 * by their vertices values.
+	 * by their vertices values which is used to sort edges in the 
+	 * kruskalMST() method.
 	 */
 	private class EdgeComparator implements Comparator<Edge>{
 		
@@ -158,6 +164,7 @@ public class proj3 {
 			return weight;
 		}
 		
+		// return formatted string with two vertex names
 		public String toString(){
 			if(vertex1.getIndex() < vertex2.getIndex()){
 				return String.format("%4d%5d", vertex1.getIndex(), vertex2.getIndex());
@@ -177,9 +184,9 @@ public class proj3 {
 	 **************************************************************************
 	 **************************************************************************/
 	private class Vertex implements Comparable{
-		int index;
-		Vertex parent;
-		int count;
+		int index;       // vertex number (also serves as key and value)
+		Vertex parent;   // link to parent in uptree
+		int count;       // count of notes in uptree (only if root)
 		
 		public Vertex(int i){
 			index = i;
@@ -207,6 +214,7 @@ public class proj3 {
 			count = c;
 		}
 
+		// compare two vertex objects by their keys/values
 		@Override
 		public int compareTo(Object u) {
 			if(this.getIndex() > ((Vertex) u).getIndex()){
@@ -215,7 +223,6 @@ public class proj3 {
 			    return -1;
 			}
 		}
-
 	}
 
 	
@@ -233,7 +240,7 @@ public class proj3 {
 		private int size;
 		
 		public Heap(){
-			heapArray = new Edge[5000];
+			heapArray = new Edge[MAX_EDGES];
 			size = 0;
 		}
 		
@@ -243,6 +250,7 @@ public class proj3 {
 			this.upHeap(size - 1);
 		}
 		
+		// delete and return root of heap with minimum weight
 		public Edge deleteMin(){
 			Edge min = heapArray[0];
 			size--;
@@ -251,6 +259,7 @@ public class proj3 {
 			return min;
 		}
 		
+		// restore heap order after insertion
 		public void upHeap(int pos){
 			if(pos > 0){
 				if(heapArray[pos].getWeight() < heapArray[(pos - 1)/2].getWeight()){
@@ -260,6 +269,7 @@ public class proj3 {
 			}
 		}
 		
+		// restore heap order after deleting root
 		public void downHeap(int pos){
 			int i = 0;
 			if ((2*pos + 2) < size){
@@ -307,25 +317,27 @@ public class proj3 {
 		Vertex[] upTreeArray;
 		
 		public upTree(){
-			upTreeArray = new Vertex[1000];
+			upTreeArray = new Vertex[MAX_NODES];
 		}
 		
+		// return root vertex of new uptree after union of two trees
 		public Vertex union(Vertex a, Vertex b){
 			int countA = Math.abs(a.getCount());
 			int countB = Math.abs(b.getCount());
 			if(countA >= countB){
 				b.setParent(a);
 				b.setCount(0);
-				a.setCount(-(countA + countB));
+				a.setCount(-(countA + countB)); // update count of new uptree
 				return a;
 			}else{
 				a.setParent(b);
 				a.setCount(0);
-				b.setCount(-(countA + countB));
+				b.setCount(-(countA + countB)); // update count of new uptree
 				return b;
 			}
 		}
 		
+		// return root vertex of uptree containing vertex
 		public Vertex find(Vertex v){
 			while(v.getParent() != null){
 				v = v.getParent();
@@ -337,10 +349,7 @@ public class proj3 {
 			int pos = v.getIndex();
 			upTreeArray[pos] = v;
 		}
-		
-
 	}
-
 	
 	
 	
@@ -355,10 +364,12 @@ public class proj3 {
 	private class AdjacencyList {
 		LinkedList<Vertex>[] adjacencyListArray;
 		
+		@SuppressWarnings("unchecked")
 		public AdjacencyList(){
-			adjacencyListArray = new LinkedList[1000];
+			adjacencyListArray = (LinkedList<Vertex>[]) new LinkedList[MAX_NODES];
 		}
 		
+		// add vertex to array of vertex lists at specified position
 		public void add(int pos, Vertex v){
 			if(adjacencyListArray[pos] == null){
 				adjacencyListArray[pos] = new LinkedList<Vertex>();
@@ -368,6 +379,7 @@ public class proj3 {
 			}
 		}
 		
+		// sort all vertex lists in array
 		public void sort(){
 			int pos = 0;
 			while(adjacencyListArray[pos] != null){
@@ -376,15 +388,15 @@ public class proj3 {
 			}
 		}
 		
+		// return string of adjacent vertices names
 		public String toString(int pos){
 			String str = "";
 			for(Vertex v: adjacencyListArray[pos]){
-				str = str + v.getIndex() + " ";
+				str = str + String.format("%4d", v.getIndex()) + " ";
 			}
 			return str;
 		}
 
 	}
-
 
 }
